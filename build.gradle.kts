@@ -10,6 +10,7 @@ repositories {
 }
 
 dependencies {
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.16.0")
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 }
