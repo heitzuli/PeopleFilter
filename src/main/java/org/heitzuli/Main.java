@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
@@ -16,7 +15,7 @@ public class Main {
         try {
             var file = new File("src/main/resources/input.json");
             List<Person> people = objectMapper.readValue(file, new TypeReference<>() { });
-            var sortingField = getUserInput();
+            var sortingField = getSortingField();
             // Default if no input: sort descending on age
             var ascending = false;
             Comparator<Person> comparator = Comparator.comparingInt(Person::age);
@@ -48,8 +47,18 @@ public class Main {
         }
     }
 
-    private static String getUserInput() {
-        Scanner scanner = new Scanner(System.in);
-        return scanner.nextLine();
+    private static String getSortingField() {
+        String answer = null;
+
+        try(var scanner = new Scanner(System.in)) {
+            while(answer == null) {
+                System.out.println("Filter by field (firstName, lastName, age, gender). Empty input to skip:");
+                var input = scanner.nextLine();
+                if(input.equals("firstName") || input.equals("lastName") || input.equals("age") ||input.equals("gender") || input.isEmpty()) {
+                    answer = input;
+                }
+            }
+        }
+        return answer;
     }
 }
