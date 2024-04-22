@@ -5,23 +5,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.function.Predicate;
 
 public class Main {
     public static void main(String[] args) {
         var objectMapper = new ObjectMapper();
-        try {
+        try (var scanner = new Scanner(System.in)) {
             var file = new File("src/main/resources/input.json");
-            List<Person> people = objectMapper.readValue(file, new TypeReference<>() {
-            });
-            String sortingField;
-            SortingOrder sortingOrder;
-            try (var scanner = new Scanner(System.in)) {
-                sortingField = getSortingField(scanner);
-                sortingOrder = getSortingOrder(scanner);
-            }
+            List<Person> people = objectMapper.readValue(file, new TypeReference<>() { });
+
+            // Filterfield empty: should not ask for content
+            // Sorting field empty: should not ask for order
+            var filterField = getFilterField(scanner);
+            var filterContent = "Duck"; // getFilterContent
+            var sortingField = getSortingField(scanner);
+            var sortingOrder = getSortingOrder(scanner);
 
             Comparator<Person> comparator = switch (sortingField) {
                 case "firstName" -> Comparator.comparing(Person::firstName);
@@ -30,10 +32,19 @@ public class Main {
                 default -> Comparator.comparingInt(Person::age);
             };
 
-            switch (sortingOrder) {
-                case ASCENDING -> people.sort(comparator);
-                case DESCENDING -> people.sort(comparator.reversed());
+            if (!filterField.isEmpty()) {
+                people = switch (filterField) {
+                    case "firstName" -> people.stream().filter(person -> true).toList();
+                    case "lastName" -> people.stream().filter(person -> person.lastName().equals(filterContent)).toList();
+                    case "gender" -> people.stream().filter(person -> true).toList();
+                    default -> throw new IllegalStateException("Unexpected value: " + filterField);
+                };
             }
+
+            people = switch (sortingOrder) {
+                case ASCENDING -> people.stream().sorted(comparator).toList();
+                case DESCENDING -> people.stream().sorted(comparator.reversed()).toList();
+            };
 
             for (Person person : people) {
                 System.out.println(person);
@@ -49,7 +60,7 @@ public class Main {
     private static String getSortingField(Scanner scanner) {
         String answer = null;
         while (answer == null) {
-            System.out.println("Filter by field (firstName, lastName, age, gender). Empty input to skip:");
+            System.out.println("Sort by field (firstName, lastName, age, gender). Empty input to skip:");
             var input = scanner.nextLine();
             if (input.equals("firstName") || input.equals("lastName") || input.equals("age") || input.equals("gender") || input.isEmpty()) {
                 answer = input;
@@ -67,6 +78,19 @@ public class Main {
             if (input.equals("y") || input.equals("n")) {
                 answer = input;
             }
-        } return answer.equals("y") ? SortingOrder.ASCENDING : SortingOrder.DESCENDING;
+        }
+        return answer.equals("y") ? SortingOrder.ASCENDING : SortingOrder.DESCENDING;
+    }
+
+    private static String getFilterField(Scanner scanner) {
+        String answer = null;
+        while (answer == null) {
+            System.out.println("Filter by field (firstName, lastName, age, gender). Empty input to skip:");
+            var input = scanner.nextLine();
+            if (input.equals("firstName") || input.equals("lastName") || input.equals("age") || input.equals("gender") || input.isEmpty()) {
+                answer = input;
+            }
+        }
+        return answer;
     }
 }
