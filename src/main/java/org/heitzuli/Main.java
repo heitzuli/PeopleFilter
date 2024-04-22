@@ -5,23 +5,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
-import java.util.function.Predicate;
 
 public class Main {
     public static void main(String[] args) {
         var objectMapper = new ObjectMapper();
         try (var scanner = new Scanner(System.in)) {
             var file = new File("src/main/resources/input.json");
-            List<Person> people = objectMapper.readValue(file, new TypeReference<>() { });
+            List<Person> people = objectMapper.readValue(file, new TypeReference<>() {
+            });
 
             // Filterfield empty: should not ask for content
             // Sorting field empty: should not ask for order
             var filterField = getFilterField(scanner);
-            var filterContent = "Duck"; // getFilterContent
+            var filterContent = getFilterContent(scanner);
             var sortingField = getSortingField(scanner);
             var sortingOrder = getSortingOrder(scanner);
 
@@ -34,9 +33,11 @@ public class Main {
 
             if (!filterField.isEmpty()) {
                 people = switch (filterField) {
-                    case "firstName" -> people.stream().filter(person -> true).toList();
-                    case "lastName" -> people.stream().filter(person -> person.lastName().equals(filterContent)).toList();
-                    case "gender" -> people.stream().filter(person -> true).toList();
+                    case "firstName" ->
+                            people.stream().filter(person -> person.firstName().equals(filterContent)).toList();
+                    case "lastName" ->
+                            people.stream().filter(person -> person.lastName().equals(filterContent)).toList();
+                    case "gender" -> people.stream().filter(person -> person.gender().equals(filterContent)).toList();
                     default -> throw new IllegalStateException("Unexpected value: " + filterField);
                 };
             }
@@ -88,6 +89,18 @@ public class Main {
             System.out.println("Filter by field (firstName, lastName, age, gender). Empty input to skip:");
             var input = scanner.nextLine();
             if (input.equals("firstName") || input.equals("lastName") || input.equals("age") || input.equals("gender") || input.isEmpty()) {
+                answer = input;
+            }
+        }
+        return answer;
+    }
+
+    private static String getFilterContent(Scanner scanner) {
+        String answer = null;
+        while (answer == null) {
+            System.out.println("Value:");
+            var input = scanner.nextLine();
+            if (!input.isEmpty()) {
                 answer = input;
             }
         }
