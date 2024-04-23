@@ -35,7 +35,6 @@ public class Main {
             }
 
             printPeople(people);
-
         } catch (JsonParseException | InvalidFormatException jsonException) {
             System.out.println("JSON file " + fileName + " is not of correct format or schema");
         } catch (IOException e) {
