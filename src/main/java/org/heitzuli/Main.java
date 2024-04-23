@@ -25,43 +25,53 @@ public class Main {
             List<Person> people = objectMapper.readValue(file, new TypeReference<>() { });
 
             var filterField = getField(scanner, "Filter by field (firstName, lastName, age, gender). Empty input to skip:");
-
             if (filterField != PersonField.NONE) {
-                var filterContent = getFilterContent(scanner);
-                people = switch (filterField) {
-                    case FIRSTNAME ->
-                            people.stream().filter(person -> person.firstName().equals(filterContent)).toList();
-                    case LASTNAME ->
-                            people.stream().filter(person -> person.lastName().equals(filterContent)).toList();
-                    case GENDER -> people.stream().filter(person -> person.gender().equals(filterContent)).toList();
-                    default -> throw new IllegalStateException("Unexpected value: " + filterField);
-                };
+                people = filterPeople(scanner, people, filterField);
             }
 
             var sortingField = getField(scanner, "Sort by field (firstName, lastName, age, gender). Empty input to skip:");
             if(sortingField != PersonField.NONE) {
-                var sortingOrder = getSortingOrder(scanner);
-
-                Comparator<Person> comparator = switch (sortingField) {
-                    case FIRSTNAME -> Comparator.comparing(Person::firstName);
-                    case LASTNAME -> Comparator.comparing(Person::lastName);
-                    case GENDER -> Comparator.comparing(Person::gender);
-                    case AGE -> Comparator.comparingInt(Person::age);
-                    default -> throw new IllegalStateException("Unexpected value: " + filterField);
-                };
-
-                people = switch (sortingOrder) {
-                    case ASCENDING -> people.stream().sorted(comparator).toList();
-                    case DESCENDING -> people.stream().sorted(comparator.reversed()).toList();
-                };
+                people = sortPeople(scanner, sortingField, filterField, people);
             }
-            printPerson(people);
+
+            printPeople(people);
 
         } catch (JsonParseException | InvalidFormatException jsonException) {
             System.out.println("JSON file " + fileName + " is not of correct format or schema");
         } catch (IOException e) {
             System.out.println("Could not open file :(");
         }
+    }
+
+    private static List<Person> sortPeople(Scanner scanner, PersonField sortingField, PersonField filterField, List<Person> people) {
+        var sortingOrder = getSortingOrder(scanner);
+
+        Comparator<Person> comparator = switch (sortingField) {
+            case FIRSTNAME -> Comparator.comparing(Person::firstName);
+            case LASTNAME -> Comparator.comparing(Person::lastName);
+            case GENDER -> Comparator.comparing(Person::gender);
+            case AGE -> Comparator.comparingInt(Person::age);
+            default -> throw new IllegalStateException("Unexpected value: " + filterField);
+        };
+
+        people = switch (sortingOrder) {
+            case ASCENDING -> people.stream().sorted(comparator).toList();
+            case DESCENDING -> people.stream().sorted(comparator.reversed()).toList();
+        };
+        return people;
+    }
+
+    private static List<Person> filterPeople(Scanner scanner, List<Person> people, PersonField filterField) {
+        var filterContent = getFilterContent(scanner);
+        people = switch (filterField) {
+            case FIRSTNAME ->
+                    people.stream().filter(person -> person.firstName().equals(filterContent)).toList();
+            case LASTNAME ->
+                    people.stream().filter(person -> person.lastName().equals(filterContent)).toList();
+            case GENDER -> people.stream().filter(person -> person.gender().equals(filterContent)).toList();
+            default -> throw new IllegalStateException("Unexpected value: " + filterField);
+        };
+        return people;
     }
 
     // Add ascending/descending i getSortingOrder
@@ -103,7 +113,7 @@ public class Main {
         return answer;
     }
 
-    private static void printPerson(List<Person> people) {
+    private static void printPeople(List<Person> people) {
         for (Person person : people) {
             System.out.println("First name: " + person.firstName());
             System.out.println("Last name: " + person.lastName());
