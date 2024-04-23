@@ -46,17 +46,13 @@ public class Main {
                 case ASCENDING -> people.stream().sorted(comparator).toList();
                 case DESCENDING -> people.stream().sorted(comparator.reversed()).toList();
             };
-
-            for (Person person : people) {
-                System.out.println(person);
-            }
+            printPerson(people);
 
         } catch (IOException e) {
             System.out.println("Could not open file :(");
         }
     }
 // Add ascending/descending i getSortingOrder
-// Printa ut resultat i printPerson. Ev i for-loop så kallar man på printPerson som innehåller println.
 
     private static String getSortingField(Scanner scanner) {
         String answer = null;
@@ -70,7 +66,6 @@ public class Main {
         return answer;
     }
 
-    // How to change to boolean?
     private static SortingOrder getSortingOrder(Scanner scanner) {
         String answer = null;
         while (answer == null) {
@@ -105,5 +100,15 @@ public class Main {
             }
         }
         return answer;
+    }
+
+    private static void printPerson(List<Person> people) {
+        for (Person person : people) {
+            System.out.println("First name: " + person.firstName());
+            System.out.println("Last name: " + person.lastName());
+            System.out.println("Age: " + person.age());
+            System.out.println("Gender: " + person.gender());
+            System.out.println();
+        }
     }
 }
