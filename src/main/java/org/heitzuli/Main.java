@@ -13,7 +13,7 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        String fileName = "src/main/resources/input.json";
+        String fileName = args[0];
         var objectMapper = new ObjectMapper();
         try (var scanner = new Scanner(System.in)) {
             var file = new File(fileName);
