@@ -11,9 +11,17 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
+        String fileName = "src/main/resources/inpu.json";
         var objectMapper = new ObjectMapper();
         try (var scanner = new Scanner(System.in)) {
-            var file = new File("src/main/resources/input.json");
+            var file = new File(fileName);
+            if (!file.exists()) {
+                System.out.println("File " + fileName + " doesn't exist.");
+                System.exit(-1); //Exits with error
+            }
+            // Kolla ifall filen är json
+            // Kolla ifall filen inte är tom
+
             List<Person> people = objectMapper.readValue(file, new TypeReference<>() {
             });
 
@@ -52,8 +60,8 @@ public class Main {
             System.out.println("Could not open file :(");
         }
     }
-// Add ascending/descending i getSortingOrder
 
+    // Add ascending/descending i getSortingOrder
     private static String getSortingField(Scanner scanner) {
         String answer = null;
         while (answer == null) {
