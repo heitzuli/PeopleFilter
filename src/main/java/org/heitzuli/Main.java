@@ -13,7 +13,7 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        String fileName = "src/main/resources/invalid_schema.json";
+        String fileName = "src/main/resources/input.json";
         var objectMapper = new ObjectMapper();
         try (var scanner = new Scanner(System.in)) {
             var file = new File(fileName);
@@ -22,38 +22,39 @@ public class Main {
                 System.exit(-1); //Exits with error
             }
 
-            List<Person> people = objectMapper.readValue(file, new TypeReference<>() {
-            });
+            List<Person> people = objectMapper.readValue(file, new TypeReference<>() { });
 
-            // Filterfield empty: should not ask for content
-            // Sorting field empty: should not ask for order
-            var filterField = getFilterField(scanner);
-            var filterContent = getFilterContent(scanner);
-            var sortingField = getSortingField(scanner);
-            var sortingOrder = getSortingOrder(scanner);
+            var filterField = getField(scanner, "Filter by field (firstName, lastName, age, gender). Empty input to skip:");
 
-            Comparator<Person> comparator = switch (sortingField) {
-                case "firstName" -> Comparator.comparing(Person::firstName);
-                case "lastName" -> Comparator.comparing(Person::lastName);
-                case "gender" -> Comparator.comparing(Person::gender);
-                default -> Comparator.comparingInt(Person::age);
-            };
-
-            if (!filterField.isEmpty()) {
+            if (filterField != PersonField.NONE) {
+                var filterContent = getFilterContent(scanner);
                 people = switch (filterField) {
-                    case "firstName" ->
+                    case FIRSTNAME ->
                             people.stream().filter(person -> person.firstName().equals(filterContent)).toList();
-                    case "lastName" ->
+                    case LASTNAME ->
                             people.stream().filter(person -> person.lastName().equals(filterContent)).toList();
-                    case "gender" -> people.stream().filter(person -> person.gender().equals(filterContent)).toList();
+                    case GENDER -> people.stream().filter(person -> person.gender().equals(filterContent)).toList();
                     default -> throw new IllegalStateException("Unexpected value: " + filterField);
                 };
             }
 
-            people = switch (sortingOrder) {
-                case ASCENDING -> people.stream().sorted(comparator).toList();
-                case DESCENDING -> people.stream().sorted(comparator.reversed()).toList();
-            };
+            var sortingField = getField(scanner, "Sort by field (firstName, lastName, age, gender). Empty input to skip:");
+            if(sortingField != PersonField.NONE) {
+                var sortingOrder = getSortingOrder(scanner);
+
+                Comparator<Person> comparator = switch (sortingField) {
+                    case FIRSTNAME -> Comparator.comparing(Person::firstName);
+                    case LASTNAME -> Comparator.comparing(Person::lastName);
+                    case GENDER -> Comparator.comparing(Person::gender);
+                    case AGE -> Comparator.comparingInt(Person::age);
+                    default -> throw new IllegalStateException("Unexpected value: " + filterField);
+                };
+
+                people = switch (sortingOrder) {
+                    case ASCENDING -> people.stream().sorted(comparator).toList();
+                    case DESCENDING -> people.stream().sorted(comparator.reversed()).toList();
+                };
+            }
             printPerson(people);
 
         } catch (JsonParseException | InvalidFormatException jsonException) {
@@ -64,13 +65,15 @@ public class Main {
     }
 
     // Add ascending/descending i getSortingOrder
-    private static String getSortingField(Scanner scanner) {
-        String answer = null;
+    private static PersonField getField(Scanner scanner, String question) {
+        PersonField answer = null;
         while (answer == null) {
-            System.out.println("Sort by field (firstName, lastName, age, gender). Empty input to skip:");
+            System.out.println(question);
             var input = scanner.nextLine();
-            if (input.equals("firstName") || input.equals("lastName") || input.equals("age") || input.equals("gender") || input.isEmpty()) {
-                answer = input;
+            if (input.equals("firstName") || input.equals("lastName") || input.equals("age") || input.equals("gender")) {
+                answer = PersonField.valueOf(input.toUpperCase());
+            } else if (input.isEmpty()) {
+                answer = PersonField.NONE;
             }
         }
         return answer;
@@ -86,18 +89,6 @@ public class Main {
             }
         }
         return answer.equals("y") ? SortingOrder.ASCENDING : SortingOrder.DESCENDING;
-    }
-
-    private static String getFilterField(Scanner scanner) {
-        String answer = null;
-        while (answer == null) {
-            System.out.println("Filter by field (firstName, lastName, age, gender). Empty input to skip:");
-            var input = scanner.nextLine();
-            if (input.equals("firstName") || input.equals("lastName") || input.equals("age") || input.equals("gender") || input.isEmpty()) {
-                answer = input;
-            }
-        }
-        return answer;
     }
 
     private static String getFilterContent(Scanner scanner) {
