@@ -1,7 +1,9 @@
 package org.heitzuli;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +13,7 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        String fileName = "src/main/resources/inpu.json";
+        String fileName = "src/main/resources/invalid_schema.json";
         var objectMapper = new ObjectMapper();
         try (var scanner = new Scanner(System.in)) {
             var file = new File(fileName);
@@ -19,8 +21,6 @@ public class Main {
                 System.out.println("File " + fileName + " doesn't exist.");
                 System.exit(-1); //Exits with error
             }
-            // Kolla ifall filen är json
-            // Kolla ifall filen inte är tom
 
             List<Person> people = objectMapper.readValue(file, new TypeReference<>() {
             });
@@ -56,6 +56,8 @@ public class Main {
             };
             printPerson(people);
 
+        } catch (JsonParseException | InvalidFormatException jsonException) {
+            System.out.println("JSON file " + fileName + " is not of correct format or schema");
         } catch (IOException e) {
             System.out.println("Could not open file :(");
         }
